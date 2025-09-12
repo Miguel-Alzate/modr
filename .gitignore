@@ -1,1 +1,2 @@
-database/sql/raw/raw_execute.txt
+*.env
+*node_modules
