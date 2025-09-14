@@ -3,6 +3,4 @@ const path = require('path');
 module.exports = {
     'config': path.resolve('src/core/config/sequalizeConfig.js'),
     'models-path': path.resolve('src/models'),
-    'seeders-path': path.resolve('src/core/database/seeders'),
-    'migrations-path': path.resolve('src/core/database/migrations')
 };

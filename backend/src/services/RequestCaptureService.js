@@ -152,7 +152,7 @@ class RequestCaptureService {
             controller: data.controller || data.path,
             happened: new Date(),
             duration: data.responseTime || data.duration,
-            made_by: data.userId || '00000000-0000-0000-0000-000000000000'
+            made_by: data.user_id || '10000000-0000-0000-0000-000000000000'
         }, { transaction });
     }
 

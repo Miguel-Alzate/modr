@@ -17,15 +17,6 @@ class SocketManager {
         this.connections.delete(socket.id);
         });
     }
-
-    setupEventListeners(socket) {
-        // Aquí puedes agregar tus eventos personalizados
-        socket.on('mensaje', (data) => {
-        console.log('Mensaje recibido:', data);
-        // Emitir respuesta
-        this.io.emit('respuesta', { mensaje: 'Mensaje recibido!' });
-        });
-    }
 }
 
 module.exports = SocketManager;
