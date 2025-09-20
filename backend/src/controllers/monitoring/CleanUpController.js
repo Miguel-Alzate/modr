@@ -11,7 +11,6 @@ class CleanUpController {
     }
 
     /**
-     * DELETE /monitoring/cleanup
      * Limpia requests antiguas
      */
     async cleanupOldRequests(req, res) {
@@ -38,7 +37,6 @@ class CleanUpController {
     }
 
     /**
-     * GET /monitoring/cleanup/preview
      * Obtiene estadísticas de limpieza sin ejecutar
      */
     async getCleanupPreview(req, res) {
@@ -65,7 +63,6 @@ class CleanUpController {
     }
 
     /**
-     * DELETE /monitoring/cleanup/by-status
      * Limpia requests por código de estado específico
      */
     async cleanupByStatus(req, res) {
@@ -103,7 +100,6 @@ class CleanUpController {
     }
 
     /**
-     * DELETE /monitoring/cleanup/by-method
      * Limpia requests por método HTTP específico
      */
     async cleanupByMethod(req, res) {

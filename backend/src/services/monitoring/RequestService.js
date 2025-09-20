@@ -367,6 +367,139 @@ class RequestService {
             };
         }
     }
+
+    /**
+     * Elimina una request específica y todos sus datos asociados en cascada
+     */
+    async deleteRequest(requestId) {
+        const transaction = await sequelize.transaction();
+        
+        try {
+            // Validar UUID
+            if (!ValidationUtils.isValidUUID(requestId)) {
+                await transaction.rollback();
+                return {
+                    success: false,
+                    error: ErrorHandler.handleValidationError(
+                        ['Invalid UUID format'], 
+                        'requestId'
+                    )
+                };
+            }
+
+            // Verificar que la request existe
+            const request = await models.Request.findOne({
+                where: { request_id: requestId },
+                transaction
+            });
+
+            if (!request) {
+                await transaction.rollback();
+                return {
+                    success: false,
+                    error: ErrorHandler.handleNotFoundError('Request', requestId)
+                };
+            }
+
+            // Contar registros relacionados antes de eliminar para el reporte
+            const [
+                payloadCount,
+                responseCount,
+                headersCount,
+                exceptionsCount,
+                queriesCount
+            ] = await Promise.all([
+                models.Payload.count({
+                    where: { request_id: requestId },
+                    transaction
+                }),
+                models.Response.count({
+                    where: { request_id: requestId },
+                    transaction
+                }),
+                // Para headers usamos la tabla intermedia
+                sequelize.query(
+                    'SELECT COUNT(*) as count FROM request_headers WHERE request_id = :requestId',
+                    {
+                        replacements: { requestId },
+                        type: sequelize.QueryTypes.SELECT,
+                        transaction
+                    }
+                ).then(result => parseInt(result[0].count)),
+                models.Exception.count({
+                    where: { request_id: requestId },
+                    transaction
+                }),
+                models.Query.count({
+                    where: { request_id: requestId },
+                    transaction
+                })
+            ]);
+
+            // Eliminar registros relacionados en el orden correcto
+            await Promise.all([
+                // Eliminar payload
+                models.Payload.destroy({
+                    where: { request_id: requestId },
+                    transaction
+                }),
+                // Eliminar response
+                models.Response.destroy({
+                    where: { request_id: requestId },
+                    transaction
+                }),
+                // Eliminar relaciones de headers (tabla intermedia)
+                sequelize.query(
+                    'DELETE FROM request_headers WHERE request_id = :requestId',
+                    {
+                        replacements: { requestId },
+                        transaction
+                    }
+                ),
+                // Eliminar exceptions
+                models.Exception.destroy({
+                    where: { request_id: requestId },
+                    transaction
+                }),
+                // Eliminar queries
+                models.Query.destroy({
+                    where: { request_id: requestId },
+                    transaction
+                })
+            ]);
+
+            // Finalmente eliminar la request principal
+            await models.Request.destroy({
+                where: { request_id: requestId },
+                transaction
+            });
+
+            await transaction.commit();
+
+            return {
+                success: true,
+                data: {
+                    request_id: requestId,
+                    deleted_at: new Date().toISOString(),
+                    cascade_deleted: {
+                        payload: payloadCount,
+                        response: responseCount,
+                        headers: headersCount,
+                        exceptions: exceptionsCount,
+                        queries: queriesCount
+                    },
+                    message: 'Request and all associated data deleted successfully'
+                }
+            };
+
+        } catch (error) {
+            await transaction.rollback();
+            return {
+                success: false,
+                error: ErrorHandler.handleDatabaseError(error, 'deleteRequest')
+            };
+        }
+    }
 }
 
 module.exports = RequestService;

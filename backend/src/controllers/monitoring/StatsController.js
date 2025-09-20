@@ -11,7 +11,6 @@ class StatsController {
     }
 
     /**
-     * GET /monitoring/stats
      * Obtiene estadísticas generales del sistema
      */
     async getSystemStats(req, res) {
@@ -36,7 +35,6 @@ class StatsController {
     }
 
     /**
-     * GET /monitoring/error-stats
      * Obtiene estadísticas de errores por tipo
      */
     async getErrorStats(req, res) {
@@ -61,7 +59,6 @@ class StatsController {
     }
 
     /**
-     * GET /monitoring/top-endpoints
      * Obtiene endpoints más utilizados
      */
     async getTopEndpoints(req, res) {
@@ -88,7 +85,6 @@ class StatsController {
     }
 
     /**
-     * GET /monitoring/performance-stats
      * Obtiene estadísticas de performance
      */
     async getPerformanceStats(req, res) {

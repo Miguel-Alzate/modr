@@ -11,7 +11,6 @@ class RequestsController {
     }
 
     /**
-     * GET /monitoring/requests
      * Obtiene requests con paginación y filtros
      */
     async getRequests(req, res) {
@@ -47,7 +46,6 @@ class RequestsController {
     }
 
     /**
-     * GET /monitoring/requests/:id
      * Obtiene detalles completos de una request
      */
     async getRequestDetails(req, res) {
@@ -85,7 +83,6 @@ class RequestsController {
     }
 
     /**
-     * GET /monitoring/error-requests
      * Obtiene requests con errores
      */
     async getErrorRequests(req, res) {
@@ -113,7 +110,6 @@ class RequestsController {
     }
 
     /**
-     * GET /monitoring/requests-over-time
      * Obtiene datos para gráficos de requests por tiempo
      */
     async getRequestsOverTime(req, res) {
@@ -140,7 +136,6 @@ class RequestsController {
     }
 
     /**
-     * GET /monitoring/slow-requests
      * Obtiene requests lentas
      */
     async getSlowRequests(req, res) {
@@ -160,6 +155,43 @@ class RequestsController {
             const errorResponse = ResponseSanitizer.error({
                 type: 'INTERNAL_ERROR',
                 message: 'An unexpected error occurred while fetching slow requests',
+                timestamp: new Date().toISOString()
+            });
+            return res.status(errorResponse.httpCode).json(errorResponse);
+        }
+    }
+
+    /**
+     * Elimina una request específica y todos sus datos asociados
+     */
+    async deleteRequest(req, res) {
+        try {
+            const { id } = req.params;
+            
+            if (!id || id.trim() === '') {
+                const validationError = {
+                    type: 'VALIDATION_ERROR',
+                    message: 'Request ID is required',
+                    details: ['ID parameter cannot be empty'],
+                    timestamp: new Date().toISOString()
+                };
+                const errorResponse = ResponseSanitizer.error(validationError);
+                return res.status(errorResponse.httpCode).json(errorResponse);
+            }
+
+            const result = await this.service.deleteRequest(id);
+            
+            return ResponseSanitizer.handleControllerResponse(
+                res, 
+                result, 
+                'Request deleted successfully'
+            );
+
+        } catch (error) {
+            console.error('[MODR] Unexpected error in RequestsController:', error);
+            const errorResponse = ResponseSanitizer.error({
+                type: 'INTERNAL_ERROR',
+                message: 'An unexpected error occurred while deleting the request',
                 timestamp: new Date().toISOString()
             });
             return res.status(errorResponse.httpCode).json(errorResponse);

@@ -81,81 +81,6 @@ router.get('/', (req, res) => requestsController.getRequests(req, res));
 
 /**
  * @swagger
- * /requests/{id}:
- *   get:
- *     summary: Retrieve detailed information about a specific request
- *     description: Fetches complete details of a request including payload, response, headers, exceptions, and related queries
- *     tags: [Requests]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *           format: uuid
- *         description: Unique UUID of the request
- *         example: "550e8400-e29b-41d4-a716-446655440000"
- *     responses:
- *       200:
- *         description: Request details retrieved successfully
- *         content:
- *           application/json:
- *             schema:
- *               allOf:
- *                 - $ref: '#/components/schemas/ApiResponse'
- *                 - type: object
- *                   properties:
- *                     data:
- *                       type: object
- *                       properties:
- *                         request_id:
- *                           type: string
- *                           format: uuid
- *                         path:
- *                           type: string
- *                         controller:
- *                           type: string
- *                         happened:
- *                           type: string
- *                           format: date-time
- *                         duration:
- *                           type: integer
- *                         status:
- *                           type: object
- *                         method:
- *                           type: object
- *                         payload:
- *                           type: object
- *                           nullable: true
- *                         response:
- *                           type: object
- *                           nullable: true
- *                         headers:
- *                           type: array
- *                           items:
- *                             type: object
- *                         exceptions:
- *                           type: array
- *                           items:
- *                             type: object
- *                         queries:
- *                           type: array
- *                           items:
- *                             type: object
- *                         user:
- *                           type: object
- *                           nullable: true
- *       400:
- *         $ref: '#/components/responses/ValidationError'
- *       404:
- *         $ref: '#/components/responses/NotFound'
- *       500:
- *         $ref: '#/components/responses/InternalError'
- */
-router.get('/:id', (req, res) => requestsController.getRequestDetails(req, res));
-
-/**
- * @swagger
  * /requests/slow-requests:
  *   get:
  *     summary: Retrieve requests that exceed response time threshold
@@ -286,20 +211,154 @@ router.get('/error-requests', (req, res) => requestsController.getErrorRequests(
  *                             format: date-time
  *                             description: Time bucket for this data point
  *                           request_count:
- *                             type: integer
- *                             description: Total requests in this time bucket
+ *                             type: string
+ *                             description: Total requests in this time bucket (as string from DB)
  *                           error_count:
- *                             type: integer
- *                             description: Error requests in this time bucket
+ *                             type: string
+ *                             description: Error requests in this time bucket (as string from DB)
  *                         example:
  *                           time_bucket: "2024-01-15T10:00:00.000Z"
- *                           request_count: 145
- *                           error_count: 3
+ *                           request_count: "145"
+ *                           error_count: "3"
  *       400:
  *         $ref: '#/components/responses/ValidationError'
  *       500:
  *         $ref: '#/components/responses/InternalError'
  */
 router.get('/requests-over-time', (req, res) => requestsController.getRequestsOverTime(req, res));
+
+/**
+ * @swagger
+ * /requests/{id}:
+ *   get:
+ *     summary: Retrieve detailed information about a specific request
+ *     description: Fetches complete details of a request including payload, response, headers, exceptions, and related queries
+ *     tags: [Requests]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Unique UUID of the request
+ *         example: "550e8400-e29b-41d4-a716-446655440000"
+ *     responses:
+ *       200:
+ *         description: Request details retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: object
+ *                       properties:
+ *                         request_id:
+ *                           type: string
+ *                           format: uuid
+ *                         path:
+ *                           type: string
+ *                         controller:
+ *                           type: string
+ *                         happened:
+ *                           type: string
+ *                           format: date-time
+ *                         duration:
+ *                           type: integer
+ *                         status:
+ *                           type: object
+ *                         method:
+ *                           type: object
+ *                         payload:
+ *                           type: object
+ *                           nullable: true
+ *                         response:
+ *                           type: object
+ *                           nullable: true
+ *                         headers:
+ *                           type: array
+ *                           items:
+ *                             type: object
+ *                         exceptions:
+ *                           type: array
+ *                           items:
+ *                             type: object
+ *                         queries:
+ *                           type: array
+ *                           items:
+ *                             type: object
+ *                         user:
+ *                           type: object
+ *                           nullable: true
+ *       400:
+ *         $ref: '#/components/responses/ValidationError'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ *       500:
+ *         $ref: '#/components/responses/InternalError'
+ *   delete:
+ *     summary: Delete a specific request and all its associated data
+ *     description: Permanently deletes a request and all its related data (payload, response, headers, exceptions, queries) in cascade
+ *     tags: [Requests]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Unique UUID of the request to delete
+ *         example: "550e8400-e29b-41d4-a716-446655440000"
+ *     responses:
+ *       200:
+ *         description: Request deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/ApiResponse'
+ *                 - type: object
+ *                   properties:
+ *                     data:
+ *                       type: object
+ *                       properties:
+ *                         request_id:
+ *                           type: string
+ *                           format: uuid
+ *                           description: UUID of the deleted request
+ *                         deleted_at:
+ *                           type: string
+ *                           format: date-time
+ *                           description: When the request was deleted
+ *                         cascade_deleted:
+ *                           type: object
+ *                           description: Count of related records that were also deleted
+ *                           properties:
+ *                             payload:
+ *                               type: integer
+ *                             response:
+ *                               type: integer
+ *                             headers:
+ *                               type: integer
+ *                             exceptions:
+ *                               type: integer
+ *                             queries:
+ *                               type: integer
+ *                         message:
+ *                           type: string
+ *                           description: Success message
+ *                           example: "Request and all associated data deleted successfully"
+ *       400:
+ *         $ref: '#/components/responses/ValidationError'
+ *       404:
+ *         $ref: '#/components/responses/NotFound'
+ *       500:
+ *         $ref: '#/components/responses/InternalError'
+ */
+router.get('/:id', (req, res) => requestsController.getRequestDetails(req, res));
+router.delete('/:id', (req, res) => requestsController.deleteRequest(req, res));
 
 module.exports = router;
