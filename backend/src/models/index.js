@@ -52,7 +52,7 @@ db.models.User = User;
 db.models.Exception = Exception;
 db.models.Query = Query;
 
-// Establecer asociaciones (si las hay)
+// Establecer asociaciones
 Object.keys(db.models).forEach(modelName => {
   if (db.models[modelName].associate) {
     db.models[modelName].associate(db.models);

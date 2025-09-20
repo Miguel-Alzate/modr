@@ -4,7 +4,9 @@ const { Server } = require('socket.io');
 const swaggerDocs = require('./src/core/config/swaggerConfig');
 const SocketManager = require('./src/core/sockets/socketManager');
 const MonitoringMiddleware = require('./src/middlewares/MonitoringMiddleware');
-const monitoringRoutes = require('./src/routes/monitoringRoutes');
+const cleanUpRoutes = require('./src/routes/cleanupRoutes');
+const requestsRoutes = require('./src/routes/requestsRoutes');
+const statsRoutes = require('./src/routes/statsRoutes');
 require('dotenv').config();
 
 // Inicializar Express y HTTP server
@@ -38,8 +40,10 @@ app.get('/health', (req, res) => {
     res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
-// Routa de el dashboard para el monitoreo
-app.use('/api/v1/modr', monitoringRoutes);
+// Rutas
+app.use('/api/v1/modr/requests', requestsRoutes);
+app.use('/api/v1/modr/stats', statsRoutes);
+app.use('/api/v1/modr/cleanup', cleanUpRoutes);
 
 // Swagger docs
 swaggerDocs(app);
@@ -71,7 +75,7 @@ app.use((req, res, next) => {
     next();
 });
 
-// Monitoring middleware initialization
+// Inicializar el middleware de monitoreo
 const monitoringMiddleware = new MonitoringMiddleware(io);
 monitoringMiddleware.configure({
     ignorePaths: bypassPaths,
@@ -80,8 +84,6 @@ monitoringMiddleware.configure({
     onlyErrors: false,
     captureMethods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH']
 });
-
-// Inicializar Monitoring middleware
 app.use(monitoringMiddleware.capture());
 app.use(monitoringMiddleware.captureErrors());
 

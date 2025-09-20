@@ -1,22 +1,22 @@
-const RequestCaptureService = require('../services/RequestCaptureService');
+const CaptureController = require('../controllers/request/CaptureController');
 
 /**
- * ModrMiddleware
+ * MonitoringMiddleware
  * Middleware principal para capturar requests HTTP del sistema MODR
  */
 class ModrMiddleware {
     constructor(socketIO = null) {
-        this.captureService = new RequestCaptureService(socketIO);
+        this.captureController = new CaptureController(socketIO);
         this.options = {
             ignorePaths: [
-                '/modr',           // Dashboard
-                '/api/modr',       // API del dashboard  
-                '/api/v1/docs',    // Swagger docs
-                '/health',         // Health check
-                '/socket.io',      // WebSocket
-                '/public',         // Archivos estáticos
-                '/static',         // Archivos estáticos
-                '/favicon.ico'     // Favicon
+                // '/modr',           // Dashboard
+                // '/api/modr',       // API del dashboard  
+                // '/api/v1/docs',    // Swagger docs
+                // '/health',         // Health check
+                // '/socket.io',      // WebSocket
+                // '/public',         // Archivos estáticos
+                // '/static',         // Archivos estáticos
+                // '/favicon.ico'     // Favicon
             ],
             captureResponseBody: true,
             captureHeaders: true,
@@ -91,7 +91,7 @@ class ModrMiddleware {
                     };
 
                     // Capturar la request usando el servicio
-                    await this.captureService.captureRequest(requestData);
+                    await this.captureController.captureRequest(requestData);
 
                 } catch (error) {
                     console.error('[MODR] Error capturing request:', error);
